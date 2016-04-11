@@ -30,6 +30,7 @@ executable brainfuck-exe
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , brainfuck
+                     , optparse-applicative
   default-language:    Haskell2010
 
 test-suite brainfuck-test
