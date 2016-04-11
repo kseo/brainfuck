@@ -10,7 +10,10 @@ data Option = Option
 main :: IO ()
 main = do
   option <- execParser opts
-  readFile (filename option) >>= runBrainfuck . parseBrainfuck
+  contents <- readFile (filename option)
+  case parseBrainfuck contents of
+    Left e -> print e
+    Right ast -> runBrainfuck ast
   where
     bfOption :: Parser Option
     bfOption = Option <$> argument str (metavar "FILE")

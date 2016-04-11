@@ -2,65 +2,44 @@ module Brainfuck.Interpreter
   ( runBrainfuck
   ) where
 
-import Brainfuck.Types
+import Brainfuck.AST
 import Brainfuck.Tape
 
+import Control.Monad (void)
 import Data.Char (chr, ord)
 import System.IO (hFlush, stdout)
 
-runBrainfuck :: BrainfuckSource -> IO ()
-runBrainfuck = run emptyTape . bfSourceToTape
-  where bfSourceToTape (b:bs) = Tape [] b bs
+runBrainfuck :: AST -> IO ()
+runBrainfuck = void . run emptyTape
 
-advance :: Tape Int -> Tape BrainfuckCommand -> IO ()
-advance dataTape (Tape _ _ []) = return ()
-advance dataTape source = run dataTape (moveRight source)
+move :: Int -> Tape Int -> Tape Int
+move n tape =
+  case n of
+    0 -> tape
+    n | n > 0 -> iterate moveRight tape !! n
+    n | n < 0 -> iterate moveLeft tape !! (negate n)
 
-run :: Tape Int -> Tape BrainfuckCommand -> IO ()
-run dataTape source@(Tape _ GoRight _) =
-  advance (moveRight dataTape) source
+runLoop :: Tape Int -> AST -> IO (Tape Int)
+runLoop tape ops =
+  case tape of
+    (Tape l 0 r) -> return tape
+    otherwise -> do
+      newTape <- run tape ops
+      runLoop newTape ops
 
-run dataTape source@(Tape _ GoLeft _) =
-  advance (moveLeft dataTape) source
-
-run (Tape l p r) source@(Tape _ Increment _) =
-  advance (Tape l (p+1) r) source
-
-run (Tape l p r) source@(Tape _ Decrement _) =
-  advance (Tape l (p-1) r) source
-
-run dataTape@(Tape _ p _) source@(Tape _ Print _) = do
-  putChar (chr p)
-  hFlush stdout
-  advance dataTape source
-
-run (Tape l _ r) source@(Tape _ Read _) = do
-  p <- getChar
-  advance (Tape l (ord p) r) source
-
-run dataTape@(Tape _ p _) source@(Tape _ LoopL _)
-  | p == 0 = seekLoopR 0 dataTape source
-  | otherwise = advance dataTape source
-
-run dataTape@(Tape _ p _) source@(Tape _ LoopR _)
-  | p /= 0 = seekLoopL 0 dataTape source
-  | otherwise = advance dataTape source
-
-seekLoopR :: Int -> Tape Int -> Tape BrainfuckCommand -> IO ()
-seekLoopR 1 dataTape source@(Tape _ LoopR _) = advance dataTape source
-seekLoopR b dataTape source@(Tape _ LoopR _) =
-    seekLoopR (b-1) dataTape (moveRight source)
-seekLoopR b dataTape source@(Tape _ LoopL _) =
-    seekLoopR (b+1) dataTape (moveRight source)
-seekLoopR b dataTape source =
-    seekLoopR b dataTape (moveRight source)
-
-seekLoopL :: Int -> Tape Int -> Tape BrainfuckCommand -> IO ()
-seekLoopL 1 dataTape source@(Tape _ LoopL _) = advance dataTape source
-seekLoopL b dataTape source@(Tape _ LoopL _) =
-    seekLoopL (b-1) dataTape (moveLeft source)
-seekLoopL b dataTape source@(Tape _ LoopR _) =
-    seekLoopL (b+1) dataTape (moveLeft source)
-seekLoopL b dataTape source =
-    seekLoopL b dataTape (moveLeft source)
-
+run :: Tape Int -> AST -> IO (Tape Int)
+run tape [] = return tape
+run tape@(Tape l p r) (op:ops) = do
+  case op of
+    (Add n) -> run (Tape l (p+n) r) ops
+    (Move n) -> run (move n tape) ops
+    (Loop loopOps) -> do
+      newTape <- runLoop tape loopOps
+      run newTape ops
+    Input -> do
+      p <- getChar
+      run tape ops
+    Output -> do
+      putChar (chr p)
+      hFlush stdout
+      run tape ops
