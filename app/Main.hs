@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import Brainfuck
 
 main :: IO ()
-main = someFunc
+main = getContents >>= runBrainfuck . parseBrainfuck
