@@ -3,18 +3,19 @@ module Brainfuck.Parser
   ) where
 
 import Brainfuck.Types
+import Data.Maybe (mapMaybe)
 
 parseBrainfuck :: String -> BrainfuckSource
-parseBrainfuck = fmap charToBF
+parseBrainfuck = mapMaybe charToBF
   where
     charToBF x = case x of
-                   '>' -> GoRight
-                   '<' -> GoLeft
-                   '+' -> Increment
-                   '-' -> Decrement
-                   '.' -> Print
-                   ',' -> Read
-                   '[' -> LoopL
-                   ']' -> LoopR
-                   c -> Comment c
+                   '>' -> Just GoRight
+                   '<' -> Just GoLeft
+                   '+' -> Just Increment
+                   '-' -> Just Decrement
+                   '.' -> Just Print
+                   ',' -> Just Read
+                   '[' -> Just LoopL
+                   ']' -> Just LoopR
+                   c -> Nothing
 

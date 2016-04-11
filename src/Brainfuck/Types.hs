@@ -11,7 +11,6 @@ data BrainfuckCommand = GoRight
   | Read
   | LoopL
   | LoopR
-  | Comment Char
 
 type BrainfuckSource = [BrainfuckCommand]
 

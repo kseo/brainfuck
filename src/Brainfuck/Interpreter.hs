@@ -46,8 +46,6 @@ run dataTape@(Tape _ p _) source@(Tape _ LoopR _)
   | p /= 0 = seekLoopL 0 dataTape source
   | otherwise = advance dataTape source
 
-run dataTape source@(Tape _ (Comment _) _) = advance dataTape source
-
 seekLoopR :: Int -> Tape Int -> Tape BrainfuckCommand -> IO ()
 seekLoopR 1 dataTape source@(Tape _ LoopR _) = advance dataTape source
 seekLoopR b dataTape source@(Tape _ LoopR _) =
