@@ -1,21 +1,37 @@
 module Brainfuck.Tape
   ( emptyTape
-  , moveLeft
-  , moveRight
-  , Tape(..)
+  , current
+  , modify
+  , move
+  , Tape
   ) where
 
-data Tape a = Tape [a]  -- Left of the pivot element
-              a         -- Pivot element
-              [a]       -- Right of the pivot element
+import Data.List.Zipper (Zipper(..))
+import qualified Data.List.Zipper as Z
 
-emptyTape :: Tape Int
-emptyTape = Tape zeros 0 zeros
-  where zeros = repeat 0
+type Tape = Zipper Int
 
-moveRight :: Tape a -> Tape a
-moveRight (Tape ls p (r:rs)) = Tape (p:ls) r rs
+emptyTape :: Tape
+emptyTape = Zip zeros zeros
+  where
+    zeros = repeat 0
 
-moveLeft :: Tape a -> Tape a
-moveLeft (Tape (l:ls) p rs) = Tape ls l (p:rs)
+moveRight :: Tape -> Tape
+moveRight = Z.right
+
+moveLeft :: Tape -> Tape
+moveLeft = Z.left
+
+move :: Int -> Tape -> Tape
+move n tape =
+  case n of
+    0 -> tape
+    n | n > 0 -> iterate moveRight tape !! n
+    n | n < 0 -> iterate moveLeft tape !! (negate n)
+
+current :: Tape -> Int
+current = Z.cursor
+
+modify :: (Int -> Int) -> Tape -> Tape
+modify f tape = Z.replace (f $ current tape) tape
 
