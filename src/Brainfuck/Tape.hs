@@ -27,7 +27,7 @@ move n tape =
   case n of
     0 -> tape
     n | n > 0 -> iterate moveRight tape !! n
-    n | n < 0 -> iterate moveLeft tape !! (negate n)
+    n | n < 0 -> iterate moveLeft tape !! negate n
 
 current :: Tape -> Int
 current = Z.cursor

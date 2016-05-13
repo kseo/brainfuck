@@ -22,7 +22,7 @@ runLoop tape ops =
 
 run :: Tape -> AST -> IO Tape
 run tape [] = return tape
-run tape (op:ops) = do
+run tape (op:ops) =
   case op of
     (Add n) -> run (modify (+n) tape) ops
     (Move n) -> run (move n tape) ops
