@@ -1,6 +1,8 @@
 brainfuck
 =========
 
+[![Build Status](https://travis-ci.org/kseo/brainfuck.svg?branch=master)](https://travis-ci.org/kseo/brainfuck)
+
 A Haskell implementation of brainfuck interpreter
 
 # References
