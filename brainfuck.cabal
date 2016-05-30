@@ -22,8 +22,8 @@ library
                        Brainfuck.Parser
                        Brainfuck.Tape
   build-depends:       base >= 4.7 && < 5
-                     , ListZipper
-                     , parsec
+                     , ListZipper >= 1.2
+                     , parsec >= 3.1
   default-language:    Haskell2010
 
 executable brainfuck-exe
